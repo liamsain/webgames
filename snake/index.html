@@ -1,0 +1,174 @@
+<html>
+
+<head>
+  <style>
+    canvas {
+      width: 800;
+      height: 600;
+      border-radius: 8px;
+      border: 1px dotted black;
+    }
+
+    body {
+      background-color: black;
+    }
+  </style>
+</head>
+
+<body>
+  <div style="display: flex;justify-content: center;">
+    <canvas id="game"></canvas>
+  </div>
+  <script>
+    const Directions = {
+      R: 'R',
+      D: 'D',
+      L: 'L',
+      U: 'U'
+    };
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const width = 800;
+    const height = 600;
+
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
+    ctx.imageSmoothingEnabled = false;
+    let lastTime = 0;
+
+
+    let direction = Directions.R;
+    addEventListener('keydown', (e) => {
+      console.log(e)
+      if (e.key == 'd' || e.key == 'ArrowRight') {
+        direction = Directions.R;
+      } else if (e.key == 'a' || e.key == 'ArrowLeft') {
+        direction = Directions.L;
+      } else if (e.key == 'w' || e.key == 'ArrowUp') {
+        direction = Directions.U;
+      } else if (e.key == 's' || e.key == 'ArrowDown') {
+        direction = Directions.D;
+      }
+    })
+
+    function getRand(min = 0, max = 100) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    function randomColour() {
+      const r = Math.floor(Math.random() * 256);
+      const g = Math.floor(Math.random() * 256);
+      const b = Math.floor(Math.random() * 256);
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    class Grid {
+      width = 100;
+      height = 100;
+      cellSize = 4;
+      showLines = false;
+      cells = [];
+      constructor(arg) {
+        for (const k in arg) {
+          this[k] = arg[k];
+        }
+        for (let i = 0; i < this.height; i++) {
+          for (let j = 0; j < this.width; j++) {
+            this.cells.push({});
+          }
+        }
+      }
+      draw() {
+
+      }
+    }
+    class Snake {
+      parts = [];
+      headPos = [40, 40];
+      direction = Directions.R;
+      ctx = null;
+      partSize = 10;
+      length = 600;
+      colour = randomColour();
+      // {headPos: [x,y], direction, ctx, partSize}
+      constructor(arg) {
+        if (arg) {
+          for (const k in arg) {
+            this[k] = arg[k]
+          }
+        }
+        const headX = this.headPos[0];
+        const headY = this.headPos[1];
+        this.parts.push({ x: headX, y: headY });
+        for (let i = 1; i < this.length; i++) {
+          if (this.direction === Directions.R) {
+            this.parts.push({ x: headX - i, y: headY })
+          } else if (this.direction === Directions.D) {
+            this.parts.push({ x: headX, y: headY - i })
+          } else if (this.direction === Directions.L) {
+            this.parts.push({ x: headX + i, y: headY })
+          } else {
+            this.parts.push({ x: headX, y: headY + i })
+          }
+        }
+      }
+      draw() {
+        for (let i = 0; i < this.parts.length; i++) {
+          const part = this.parts[i];
+          this.ctx.beginPath();
+          this.ctx.rect(part.x, part.y, this.partSize, this.partSize);
+          this.ctx.fillStyle = this.colour;
+          this.ctx.fill();
+        }
+      }
+      update() {
+        this.direction = direction;
+        const head = this.parts[0];
+        let prevCoord = { x: 0, y: 0 };
+        if (this.direction === Directions.R) {
+          prevCoord = { x: head.x + 1, y: head.y }
+        } else if (this.direction === Directions.D) {
+          prevCoord = { x: head.x, y: head.y + 1 }
+        } else if (this.direction === Directions.L) {
+          prevCoord = { x: head.x - 1, y: head.y }
+        } else {
+          prevCoord = { x: head.x, y: head.y - 1 }
+        }
+
+        for (let i = 0; i < this.parts.length; i++) {
+          const tmp = structuredClone(this.parts[i]);
+          this.parts[i].x = prevCoord.x;
+          this.parts[i].y = prevCoord.y;
+          prevCoord = tmp;
+        }
+      }
+    }
+
+    const grid = new Grid({ width: 200 })
+    const snake = new Snake({ ctx, colour: 'green' });
+
+
+    function update(delta) {
+      snake.update();
+    }
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      snake.draw();
+    }
+
+    function gameLoop(timestamp) {
+      const delta = (timestamp - lastTime) / 1000; // seconds
+      lastTime = timestamp;
+      update(delta);
+      draw();
+      window.requestAnimationFrame(gameLoop);
+    }
+    window.requestAnimationFrame(gameLoop);
+  </script>
+</body>
+
+</html>
