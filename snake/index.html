@@ -6,12 +6,12 @@
       width: 800;
       height: 600;
       border-radius: 8px;
-      border: 1px dotted black;
+      border: 1px solid black;
     }
 
-    body {
+    /* body {
       background-color: black;
-    }
+    } */
   </style>
 </head>
 
@@ -20,6 +20,17 @@
     <canvas id="game"></canvas>
   </div>
   <script>
+    function getRand(min = 0, max = 100) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    function randomColour() {
+      const r = Math.floor(Math.random() * 256);
+      const g = Math.floor(Math.random() * 256);
+      const b = Math.floor(Math.random() * 256);
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
     const Directions = {
       R: 'R',
       D: 'D',
@@ -29,8 +40,9 @@
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
-    const width = 800;
+    const width = 600;
     const height = 600;
+    const CellWidth = 20;
 
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
@@ -43,66 +55,68 @@
 
     let direction = Directions.R;
     addEventListener('keydown', (e) => {
-      console.log(e)
       if (e.key == 'd' || e.key == 'ArrowRight') {
-        direction = Directions.R;
+        if (direction == Directions.D || direction == Directions.U) {
+          direction = Directions.R;
+        }
       } else if (e.key == 'a' || e.key == 'ArrowLeft') {
-        direction = Directions.L;
+        if (direction == Directions.D || direction == Directions.U) {
+          direction = Directions.L;
+        }
       } else if (e.key == 'w' || e.key == 'ArrowUp') {
-        direction = Directions.U;
+        if (direction == Directions.L || direction == Directions.R) {
+          direction = Directions.U;
+        }
       } else if (e.key == 's' || e.key == 'ArrowDown') {
-        direction = Directions.D;
+        if (direction == Directions.L || direction == Directions.R) {
+          direction = Directions.D;
+        }
       }
     })
 
-    function getRand(min = 0, max = 100) {
-      return Math.floor(Math.random() * (max - min + 1) + min);
-    }
-
-    function randomColour() {
-      const r = Math.floor(Math.random() * 256);
-      const g = Math.floor(Math.random() * 256);
-      const b = Math.floor(Math.random() * 256);
-      return `rgb(${r}, ${g}, ${b})`;
-    }
 
     class Grid {
-      width = 100;
-      height = 100;
+      width = 20;
+      height = 20;
       cellSize = 4;
       showLines = false;
-      cells = [];
+      lineColour = 'red';
+      ctx = null;
       constructor(arg) {
         for (const k in arg) {
           this[k] = arg[k];
         }
+      }
+      draw() {
         for (let i = 0; i < this.height; i++) {
           for (let j = 0; j < this.width; j++) {
-            this.cells.push({});
+            this.ctx.beginPath();
+            const x = j * this.cellSize;
+            const y = i * this.cellSize;
+            this.ctx.strokeRect(x, y, this.cellSize, this.cellSize);
+            this.ctx.strokeStyle = 'blue'
+            this.ctx.stroke();
           }
         }
       }
-      draw() {
-
-      }
     }
+    
     class Snake {
       parts = [];
-      headPos = [40, 40];
+      headPos = { x: 20, y: 20 };
       direction = Directions.R;
       ctx = null;
       partSize = 10;
-      length = 600;
+      length = 10;
       colour = randomColour();
-      // {headPos: [x,y], direction, ctx, partSize}
       constructor(arg) {
         if (arg) {
           for (const k in arg) {
             this[k] = arg[k]
           }
         }
-        const headX = this.headPos[0];
-        const headY = this.headPos[1];
+        const headX = this.headPos.x ;
+        const headY = this.headPos.y ;
         this.parts.push({ x: headX, y: headY });
         for (let i = 1; i < this.length; i++) {
           if (this.direction === Directions.R) {
@@ -120,7 +134,7 @@
         for (let i = 0; i < this.parts.length; i++) {
           const part = this.parts[i];
           this.ctx.beginPath();
-          this.ctx.rect(part.x, part.y, this.partSize, this.partSize);
+          this.ctx.rect(part.x * this.partSize, part.y * this.partSize, this.partSize, this.partSize);
           this.ctx.fillStyle = this.colour;
           this.ctx.fill();
         }
@@ -138,6 +152,15 @@
         } else {
           prevCoord = { x: head.x, y: head.y - 1 }
         }
+        if (prevCoord.x >= width / this.partSize) {
+          prevCoord.x = 0;
+        } else if (prevCoord.x < 0) {
+          prevCoord.x = width / this.partSize;
+        } else if (prevCoord.y >= height / this.partSize) {
+          prevCoord.y = 0;
+        } else if (prevCoord.y < 0) {
+          prevCoord.y = height / this.partSize
+        }
 
         for (let i = 0; i < this.parts.length; i++) {
           const tmp = structuredClone(this.parts[i]);
@@ -147,17 +170,40 @@
         }
       }
     }
+    class Apple {
+      exists = false;
+      cellSize = 20;
+      maxX = 20;
+      maxY = 20;
+      ctx = null;
+      coord = { x: 0, y: 0 };
+      constructor(arg) {
+        if (arg) {
+          for (const k in arg) {
+            this[k] = arg[k]
+          }
+        }
+      }
+      update() {
 
-    const grid = new Grid({ width: 200 })
-    const snake = new Snake({ ctx, colour: 'green' });
+      }
+      draw() {
 
+      }
+    }
 
+    // const grid = new Grid({ width: 20, height: 20, ctx, cellSize: width / 20 })
+    const snake = new Snake({ ctx, colour: 'green', partSize: width / CellWidth, headPos: { x: 10, y: 10 } });
+    const apple = new Apple();
+
+    setInterval(() => { snake.update(); }, 100)
     function update(delta) {
-      snake.update();
+      // snake.update();
     }
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       snake.draw();
+      // grid.draw();
     }
 
     function gameLoop(timestamp) {
