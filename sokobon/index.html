@@ -149,7 +149,8 @@
           // direction = Directions.U;
           crateDestCoord.y -= 1;
         }
-        if (currentMap[crateDestCoord.y][crateDestCoord.x] == MapKeys.Floor) {
+        const crateDestTile = currentMap[crateDestCoord.y][crateDestCoord.x]
+        if (crateDestTile == MapKeys.Floor || crateDestTile == MapKeys.Target) {
           currentMap[crateDestCoord.y][crateDestCoord.x] = MapKeys.Crate;
           currentMap[targetCoord.y][targetCoord.x] = MapKeys.Player;
           currentMap[startCoord.y][startCoord.x] = MapKeys.Floor;
