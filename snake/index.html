@@ -30,6 +30,11 @@
       const b = Math.floor(Math.random() * 256);
       return `rgb(${r}, ${g}, ${b})`;
     }
+    const GameStates = {
+      Playing: 'Playing',
+      Over: 'Over'
+    }
+    let GameState = GameStates.Playing;
 
     const Directions = {
       R: 'R',
@@ -53,53 +58,7 @@
     let lastTime = 0;
 
 
-    let direction = Directions.R;
-    addEventListener('keydown', (e) => {
-      if (e.key == 'd' || e.key == 'ArrowRight') {
-        if (direction == Directions.D || direction == Directions.U) {
-          direction = Directions.R;
-        }
-      } else if (e.key == 'a' || e.key == 'ArrowLeft') {
-        if (direction == Directions.D || direction == Directions.U) {
-          direction = Directions.L;
-        }
-      } else if (e.key == 'w' || e.key == 'ArrowUp') {
-        if (direction == Directions.L || direction == Directions.R) {
-          direction = Directions.U;
-        }
-      } else if (e.key == 's' || e.key == 'ArrowDown') {
-        if (direction == Directions.L || direction == Directions.R) {
-          direction = Directions.D;
-        }
-      }
-    })
 
-
-    class Grid {
-      width = 20;
-      height = 20;
-      cellSize = 4;
-      showLines = false;
-      lineColour = 'red';
-      ctx = null;
-      constructor(arg) {
-        for (const k in arg) {
-          this[k] = arg[k];
-        }
-      }
-      draw() {
-        for (let i = 0; i < this.height; i++) {
-          for (let j = 0; j < this.width; j++) {
-            this.ctx.beginPath();
-            const x = j * this.cellSize;
-            const y = i * this.cellSize;
-            this.ctx.strokeRect(x, y, this.cellSize, this.cellSize);
-            this.ctx.strokeStyle = 'blue'
-            this.ctx.stroke();
-          }
-        }
-      }
-    }
 
     class Snake {
       parts = [];
@@ -113,12 +72,15 @@
       maxX = 0;
       maxY = 0;
       coordHashMap = {};
+      lastDirection = Directions.R;
+      unusedGridCells = [];
       constructor(arg) {
         if (arg) {
           for (const k in arg) {
             this[k] = arg[k]
           }
         }
+        this.lastDirection = this.direction;
         const headX = this.headPos.x;
         const headY = this.headPos.y;
         this.parts.push({ x: headX, y: headY });
@@ -136,7 +98,9 @@
 
         for (let y = 0; y < this.maxY; y++) {
           for (let x = 0; x < this.maxX; x++) {
-            this.coordHashMap[`${x} ${y}`] = false;
+            if (!this.parts.includes(part => part.x === x && part.y === y)) {
+              this.unusedGridCells.push({ x, y });
+            }
           }
         }
       }
@@ -153,8 +117,28 @@
         this.ctx.fillStyle = 'red';
         this.ctx.fill();
       }
+      handleKeyPress(key) {
+
+        if (key == 'd' || key == 'ArrowRight') {
+          if (this.lastDirection == Directions.D || this.lastDirection == Directions.U) {
+            this.direction = Directions.R;
+          }
+        } else if (key == 'a' || key == 'ArrowLeft') {
+          if (this.lastDirection == Directions.D || this.lastDirection == Directions.U) {
+            this.direction = Directions.L;
+          }
+        } else if (key == 'w' || key == 'ArrowUp') {
+          if (this.lastDirection == Directions.L || this.lastDirection == Directions.R) {
+            this.direction = Directions.U;
+          }
+        } else if (key == 's' || key == 'ArrowDown') {
+          if (this.lastDirection == Directions.L || this.lastDirection == Directions.R) {
+            this.direction = Directions.D;
+          }
+        }
+
+      }
       update() {
-        this.direction = direction;
         const head = this.parts[0];
         let nextCoord = { x: 0, y: 0 };
         if (this.direction === Directions.R) {
@@ -166,6 +150,7 @@
         } else {
           nextCoord = { x: head.x, y: head.y - 1 }
         }
+        this.lastDirection = this.direction;
         if (nextCoord.x >= width / this.partSize) {
           nextCoord.x = 0;
         } else if (nextCoord.x < 0) {
@@ -176,10 +161,15 @@
           nextCoord.y = height / this.partSize
         }
         let appleEaten = false;
+        if (this.parts.slice(1).some(part => part.x === nextCoord.x && part.y === nextCoord.y)) {
+          GameState = GameStates.Over;
+          return;
+        }
         if (nextCoord.x == this.appleCoord.x && nextCoord.y == this.appleCoord.y) {
-          console.log('apple eaten')
           appleEaten = true;
         }
+        const cellIsNewHeadPos = cell => cell.x == nextCoord.x && cell.y == nextCoord.y;
+        this.unusedGridCells = this.unusedGridCells.filter(cell => !cellIsNewHeadPos(cell));
 
         for (let i = 0; i < this.parts.length; i++) {
           const tmp = { x: this.parts[i].x, y: this.parts[i].y }
@@ -187,10 +177,16 @@
           this.parts[i].y = nextCoord.y;
           nextCoord = tmp;
         }
+        // apple eaten check
         if (appleEaten) {
           this.parts.push({ x: this.appleCoord.x, y: this.appleCoord.y });
           this.appleCoord = { x: getRand(0, 19), y: getRand(0, 19) }
+        } else {
+          // push the cell that the tail just exited
+          this.unusedGridCells.push({ ...nextCoord });
         }
+
+
       }
       addTailPart() {
         const currentTail = this.parts[this.parts.length - 1];
@@ -203,7 +199,7 @@
     const MaxY = height / CellWidth;
 
     const appleCoord = { x: getRand(0, 19), y: getRand(0, 19) }
-    const snake = new Snake({
+    let snake = new Snake({
       ctx,
       colour: 'green',
       partSize: width / CellWidth,
@@ -211,8 +207,26 @@
       maxY: MaxY,
       appleCoord,
     });
+    addEventListener('keydown', (e) => {
+      snake.handleKeyPress(e.key);
+    })
 
-    setInterval(() => { snake.update(); }, 100)
+
+    setInterval(() => {
+      if (GameState == GameStates.Playing) {
+        snake.update();
+      } else {
+        snake = new Snake({
+          ctx,
+          colour: 'green',
+          partSize: width / CellWidth,
+          maxX: MaxX,
+          maxY: MaxY,
+          appleCoord,
+        });
+        GameState = GameStates.Playing;
+      }
+    }, 100)
     function update(delta) {
     }
     function draw() {
