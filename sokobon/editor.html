@@ -1,0 +1,155 @@
+<html>
+
+<head>
+  <style>
+    canvas {
+      width: 800;
+      height: 600;
+      /* border-radius: 4px; */
+      border: 1px solid rgb(204, 204, 204);
+    }
+
+    p {
+      margin: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <div style="display: flex;justify-content: center;">
+    <canvas id="game"></canvas>
+    <div>
+      <p>1/w: wall</p>
+      <p>2/f: floor</p>
+      <p>3/*: empty</p>
+      <p>4/p: player</p>
+      <p>5/c: crate</p>
+      <p>6/t: target</p>
+      <p><strong>Current: </strong></p>
+      <p id="current"></p>
+    </div>
+  </div>
+  <script>
+
+    const CellWidth = 40;
+    const GridDims = { height: 20, width: 20 };
+    const MapKeys = {
+      Wall: '-',
+      Floor: '.',
+      Empty: '*',
+      Player: 'p',
+      Crate: 'c',
+      Target: '+',
+    }
+    let mouseIsDown = false;
+
+    let lastTime = 0;
+
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    canvas.style.width = GridDims.width * dpr * CellWidth;
+    canvas.style.height = GridDims.height * dpr * CellWidth;
+    canvas.width = GridDims.width * dpr * CellWidth;
+    canvas.height = GridDims.height * dpr * CellWidth;
+
+    let selectedBrush = MapKeys.Wall;
+    let theLevelArrays = [];
+    for (let y = 0; y < GridDims.height; y++) {
+      theLevelArrays.push([])
+      for (let x = 0; x < GridDims.width; x++) {
+        theLevelArrays[y].push('*');
+      }
+    }
+
+    function drawLevel(mapArrays, ctx) {
+      for (let y = 0; y < mapArrays.length; y++) {
+        for (let x = 0; x < mapArrays[y].length; x++) {
+          const tile = mapArrays[y][x];
+          ctx.beginPath();
+          ctx.rect(x * CellWidth, y * CellWidth, CellWidth, CellWidth);
+          if (tile == MapKeys.Wall) {
+            ctx.fillStyle = '#c70e0e';
+          } else if (tile == MapKeys.Floor) {
+            ctx.fillStyle = '#c4c4c4';
+          } else if (tile == MapKeys.Player) {
+            ctx.fillStyle = '#1153ed';
+          } else if (tile == MapKeys.Crate) {
+            ctx.fillStyle = '#dce625';
+          } else if (tile == MapKeys.Target) {
+            ctx.fillStyle = '#25e632';
+          } else if (tile == MapKeys.Empty) {
+            ctx.fillStyle = '#fff';
+          }
+          ctx.fill();
+        }
+      }
+    }
+
+
+    function handleKeydown(key) {
+      if (key == '1' || key == 'w') {
+        selectedBrush = MapKeys.Wall
+      } else if (key == '2' || key == 'f') {
+        selectedBrush = MapKeys.Floor
+      } else if (key == '3' || key == '*') {
+        selectedBrush = MapKeys.Empty;
+      } else if (key == '4' || key == 'p') {
+        selectedBrush = MapKeys.Player;
+      } else if (key == '5' || key == 'c') {
+        selectedBrush = MapKeys.Crate;
+      } else if (key == '6' || key == 't') {
+        selectedBrush = MapKeys.Target;
+      }
+      for (const k in MapKeys) {
+        if (selectedBrush == MapKeys[k]) {
+          document.querySelector('#current').innerHTML = k;
+        }
+      }
+    }
+    function handleMouseDown(ev) {
+      const x = Math.floor(ev.offsetX / CellWidth);
+      const y = Math.floor(ev.offsetY / CellWidth);
+      const clone = structuredClone(theLevelArrays)
+      clone[y][x] = selectedBrush;
+      theLevelArrays = clone;
+    }
+
+    document.addEventListener('keydown', (ev) => {
+      handleKeydown(ev.key);
+    })
+    document.addEventListener('mousedown', (ev) => {
+      handleMouseDown(ev);
+      mouseIsDown = true;
+    })
+
+    document.addEventListener('mouseup', (ev) => {
+      mouseIsDown = false;
+    });
+    document.addEventListener('mousemove', (ev) => {
+      if (mouseIsDown) {
+        handleMouseDown(ev)
+      }
+
+    })
+
+    function update() { }
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawLevel(theLevelArrays, ctx);
+    }
+
+    function gameLoop(timestamp) {
+      const delta = (timestamp - lastTime) / 1000; // seconds
+      lastTime = timestamp;
+      update(delta);
+      draw();
+
+      requestAnimationFrame(gameLoop);
+    }
+    requestAnimationFrame(gameLoop);
+
+  </script>
+</body>
+
+</html>
