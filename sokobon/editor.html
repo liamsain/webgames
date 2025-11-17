@@ -19,14 +19,16 @@
   <div style="display: flex;justify-content: center;">
     <canvas id="game"></canvas>
     <div>
-      <p>1/w: wall</p>
-      <p>2/f: floor</p>
-      <p>3/*: empty</p>
-      <p>4/p: player</p>
-      <p>5/c: crate</p>
-      <p>6/t: target</p>
+      <p>Wall: 1/w</p>
+      <p>Floor: 2/f</p>
+      <p>Empty: 3/*</p>
+      <p>Player: 4/p</p>
+      <p>Crate: 5/c</p>
+      <p>Target: 6/t</p>
+      <p>Log lvl: L</p>
       <p><strong>Current: </strong></p>
-      <p id="current"></p>
+      <p id="current">Wall</p>
+
     </div>
   </div>
   <script>
@@ -100,6 +102,8 @@
         selectedBrush = MapKeys.Crate;
       } else if (key == '6' || key == 't') {
         selectedBrush = MapKeys.Target;
+      } else if (key == 'l') {
+        logLevelStringToConsole();
       }
       for (const k in MapKeys) {
         if (selectedBrush == MapKeys[k]) {
@@ -107,12 +111,23 @@
         }
       }
     }
+
+    async function logLevelStringToConsole() {
+      let str = '';
+      theLevelArrays.forEach(arr => str += `${arr.join('')}\n`)
+      const type = "text/plain";
+      const clipboardItemData = {
+        [type]: str,
+      };
+      const clipboardItem = new ClipboardItem(clipboardItemData);
+      await navigator.clipboard.write([clipboardItem]);
+      console.log(str);
+    }
+
     function handleMouseDown(ev) {
       const x = Math.floor(ev.offsetX / CellWidth);
       const y = Math.floor(ev.offsetY / CellWidth);
-      const clone = structuredClone(theLevelArrays)
-      clone[y][x] = selectedBrush;
-      theLevelArrays = clone;
+      theLevelArrays[y][x] = selectedBrush;
     }
 
     document.addEventListener('keydown', (ev) => {
@@ -130,7 +145,6 @@
       if (mouseIsDown) {
         handleMouseDown(ev)
       }
-
     })
 
     function update() { }
