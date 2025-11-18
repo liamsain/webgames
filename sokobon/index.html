@@ -8,13 +8,30 @@
       /* border-radius: 4px; */
       /*border: 1px solid rgb(204, 204, 204);*/
     }
+
+    button {
+      margin: 12px;
+      padding: 12px;
+    }
+
+    h2 {
+      text-align: center;
+      margin: 0;
+    }
   </style>
 </head>
 
 <body>
+
+  <h2 id="levelName">Title</h2>
   <div style="display: flex;justify-content: center;">
     <canvas id="game"></canvas>
   </div>
+  <div style="display: flex;justify-content: center;">
+    <button onclick="reset();">Reset</button>
+    <button onclick="undo()">Undo</button>
+  </div>
+
   <script>
 
     let CellWidth = 40;
@@ -42,54 +59,57 @@
     }
     const Levels = [
       {
-        name: 'Hair and glasses',
-        data: `********************
-*****-------********
-***---.-...---******
-***-..pc.....--*****
-***-.--.......--****
-***-.---.......---**
-***-.---.........-**
-***-..........--.-**
-***-.-----------.-**
-***-.-*********-.-**
-**--.-*******---.--*
-**--.-******--....-*
-*--..--****--....--*
-*-....-****-.....-**
-*-..-.------..+..-**
-*-...............-**
-*--...------....--**
-**-----****--..--***
-************----****
+        name: 'Parrot',
+        extras: ['make a parrot'],
+        data: `
+        ********************
 ********************
-`
+********************
+********************
+*******------*******
+*******-....-*******
+*******-..c.-*******
+*******-..p.-*******
+*******-..---*******
+*******-...-********
+*******-..+-********
+*******-----********
+********************
+********************
+********************
+********************
+********************
+********************
+********************
+********************
+          `
       },
       {
-        name: 'Crooked staff', data: `
-********************
-*****----***********
-*-----..-*****---***
-*-pc....----**-.-***
-*-.---.....-*--.--**
-*-.-.-.....-*-...--*
-*-.-.-----.-*-.+..--
-*-.........-*-...--*-
-*-.----.--.----..-**
-*-.-..-.....-*-.--**
-*-.-..-.....-*-.--**
-*-....---..----..--*
---......----......--
--................---
--...-.----....-..-**
---..-.--*--......-**
-*-..-.--**--.....-**
-*-------***-------**
+        name: 'Alien',
+        extras: ['make alien cry'],
+        data: `
+        ********************
 ********************
 ********************
-
-      `},
-
+*******-------******
+*******-.-..+-******
+*******-....--******
+*******-.....-******
+*******--.--.-******
+*******-.....-******
+*******-.....-******
+*******----.--******
+*******----.--******
+*******-.....--*****
+*******-.c....-*****
+*******-.p....-*****
+*******--------*****
+********************
+********************
+********************
+********************
+        `
+      },
       {
         name: 'Smoking man',
         data: `********************
@@ -114,8 +134,35 @@
 ********************
 `
       },
+
       {
-        name: 'chicken',
+        name: 'Sausage dog',
+        data: `
+        ********************
+********************
+********************
+********************
+********************
+**-**********-----**
+**----*******-...-**
+**-+----------.-.-**
+**-pc............-**
+**-..--------..---**
+**----******----****
+********************
+********************
+********************
+********************
+********************
+********************
+********************
+********************
+********************
+
+        `
+      },
+      {
+        name: 'Chick',
         data: `********************
 ********************
 ********************
@@ -139,7 +186,7 @@
 `
       },
       {
-        name: 'ghostface',
+        name: 'Ghostface',
         data: `********************
 ********************
 ********************
@@ -162,68 +209,86 @@
 *********-**********
 `
       },
+
       {
-        name: 'sausage dog',
+        name: 'Sideburns',
         data: `
-        -**********-----
-        ----*******-...-
-        -+----------.-.-
-        -pc............-
-        -..--------..---
-        ----******----
-        `
-      },
-      {
-        name: 'sideburns',
-        data: `
-        ---------------
-        ----........---
-        -.............-
-        -....--.......-
-        -.....-.--....-
-        -+---.-..-....-
-        -.p.c.-..-....-
-        --.......------
-        ---.........---
-        ----.......----
-        ---------------
-        `
-      },
-      {
-        name: 'p',
-        extras: ['make a parrot'],
-        data: `
-          ------
-          -....-
-          -..c.-
-          -..p.-
-          -..---
-          -...-
-          -..+-
-          -----
-          `
-      },
-      {
-        name: 'alien',
-        extras: ['make alien cry'],
-        data: `
-        -------
-        -.-..+-
-        -....--
-        -.....-
-        --.--.-
-        -.....-
-        -.....-
-        ----.--
-        ----.--
-        -.....--
-        -.c....-
-        -.p....-
-        --------
+        ********************
+********************
+********************
+********************
+***---------------**
+***----........---**
+***-.............-**
+***-....--.......-**
+***-.....-.--....-**
+***-+---.-..-....-**
+***-.p.c.-..-....-**
+***--.......------**
+***---.........---**
+***----.......----**
+***---------------**
+********************
+********************
+********************
+********************
+********************
         `
       },
 
+      {
+        name: 'Hair and Glasses',
+        data: `********************
+*****-------********
+***---.-...---******
+***-..pc.....--*****
+***-.--.......--****
+***-.---.......---**
+***-.---.........-**
+***-..........--+-**
+***-.-----------.-**
+***-.-*********-.-**
+**--.-*******---.--*
+**--.-******--....-*
+*--..--****--....--*
+*-....-****-.....-**
+*-..-.------..-..-**
+*-...............-**
+*--...------....--**
+**-----****--..--***
+************----****
+********************
+`
+      },
+      {
+        name: 'Crooked Staff', data: `
+********************
+*****----***********
+*-----..-*****---***
+*-pc....----**-.-***
+*-.---.....-*--.--**
+*-.-.-.....-*-...--*
+*-.-.-----.-*-.+..--
+*-.........-*-...--*-
+*-.----.--.----..-**
+*-.-..-.....-*-.--**
+*-.-..-.....-*-.--**
+*-....---..----..--*
+--......----......--
+-................---
+-...-.----....-..-**
+--..-.--*--......-**
+*-..-.--**--.....-**
+*-------***-------**
+********************
+********************
+
+      `},
+
     ];
+
+
+    document.querySelector('#levelName').innerHTML = Levels[currentLevel].name;
 
     function convertMapLevelDataToArrays(level) {
       const mapData = Levels[level].data;
@@ -281,6 +346,15 @@
         }
       }
     }
+    function goNextLevel() {
+      currentLevel += 1;
+      if (currentLevel > Levels.length - 1) {
+        currentLevel = 0;
+      }
+      currentMap = convertMapLevelDataToArrays(currentLevel);
+      states = [structuredClone(currentMap)];
+      document.querySelector('#levelName').innerHTML = Levels[currentLevel].name;
+    }
 
     function handleMove(startCoord, targetCoord) {
       const targetTile = currentMap[targetCoord.y][targetCoord.x];
@@ -308,12 +382,7 @@
           currentMap[targetCoord.y][targetCoord.x] = MapKeys.Player;
           currentMap[startCoord.y][startCoord.x] = MapKeys.Floor;
           if (crateDestTile == MapKeys.Target) {
-            currentLevel += 1;
-            if (currentLevel > Levels.length - 1) {
-              currentLevel = 0;
-            }
-            currentMap = convertMapLevelDataToArrays(currentLevel);
-            states = [structuredClone(currentMap)];
+            goNextLevel();
             return;
           }
         }
@@ -321,6 +390,17 @@
       states.push(structuredClone(currentMap));
     }
 
+    function undo() {
+      states.pop();
+      if (states.length) {
+        currentMap = states.pop();
+      }
+      states.push(structuredClone(currentMap));
+    }
+    function reset() {
+      currentMap = convertMapLevelDataToArrays(currentLevel)
+      states = [structuredClone(currentMap)];
+    }
     function handleKeydown(key) {
       const { x, y } = getPlayerCoord(currentMap);
       if (key == 'd' || key == 'ArrowRight') {
@@ -332,23 +412,14 @@
       } else if (key == 's' || key == 'ArrowDown') {
         handleMove({ x, y }, { x, y: y + 1 })
       } else if (key == 'r') {
-        currentMap = convertMapLevelDataToArrays(currentLevel)
-        states = [structuredClone(currentMap)];
+        reset();
       } else if (key == 'z') {
-        states.pop();
-        if (states.length) {
-          currentMap = states.pop();
-        }
-        states.push(structuredClone(currentMap));
+        undo();
       }
     }
-
-    document.addEventListener('keydown', (ev) => {
-      handleKeydown(ev.key);
-    })
-    window.addEventListener('resize', (ev) => {
+    function handleDeviceWidth() {
       if (window.innerWidth < 800) {
-        CellWidth = 24;
+        CellWidth = 25;
         canvas.style.width = GridDims.width * dpr * CellWidth;
         canvas.style.height = GridDims.height * dpr * CellWidth;
         canvas.width = GridDims.width * dpr * CellWidth;
@@ -360,6 +431,14 @@
         canvas.width = GridDims.width * dpr * CellWidth;
         canvas.height = GridDims.height * dpr * CellWidth;
       }
+    }
+    handleDeviceWidth();
+
+    document.addEventListener('keydown', (ev) => {
+      handleKeydown(ev.key);
+    })
+    window.addEventListener('resize', (ev) => {
+      handleDeviceWidth();
     });
 
     function update() { }

@@ -30,6 +30,11 @@
       <p id="current">Wall</p>
 
     </div>
+
+  </div>
+  <div style="display: flex;justify-content: center;margin: 20px">
+    <textarea rows="10" cols="40" placeholder="Enter raw level data" id="textareaLevelInput"></textarea>
+    <button id="textareaSubmitBtn">Submit</button>
   </div>
   <script>
 
@@ -71,11 +76,9 @@
           ctx.beginPath();
           ctx.rect(x * CellWidth, y * CellWidth, CellWidth, CellWidth);
           if (tile == MapKeys.Wall) {
-            // ctx.fillStyle = '#c70e0e';
             ctx.fillStyle = '#f06c57';
           } else if (tile == MapKeys.Floor) {
             ctx.fillStyle = '#f9edd8';
-            // ctx.fillStyle = '#c4c4c4';
           } else if (tile == MapKeys.Player) {
             ctx.fillStyle = '#1153ed';
           } else if (tile == MapKeys.Crate) {
@@ -151,9 +154,11 @@
     }
 
     function handleMouseDown(ev) {
-      const x = Math.floor(ev.offsetX / CellWidth);
-      const y = Math.floor(ev.offsetY / CellWidth);
-      theLevelArrays[y][x] = selectedBrush;
+      if (ev.target.id == 'game') {
+        const x = Math.floor(ev.offsetX / CellWidth);
+        const y = Math.floor(ev.offsetY / CellWidth);
+        theLevelArrays[y][x] = selectedBrush;
+      }
     }
 
     document.addEventListener('keydown', (ev) => {
@@ -177,7 +182,6 @@
       for (const k in MapKeys) {
         keys.push(k);
       }
-      debugger;
       const current = keys.findIndex(k => MapKeys[k] == selectedBrush);
       let direction = ev.deltaY > 0 ? 1 : -1;
       let key;
@@ -188,6 +192,23 @@
       }
       selectedBrush = MapKeys[key];
       document.querySelector('#current').innerHTML = key;
+    })
+
+    document.querySelector('#textareaSubmitBtn').addEventListener('click', () => {
+      const input = document.querySelector('#textareaLevelInput');
+      const lines = input.value.split('\n').map(l => l.trim());
+      theLevelArrays = [];
+      for (let y = 0; y < GridDims.height; y++) {
+        theLevelArrays.push(new Array(GridDims.width).fill(MapKeys.Empty))
+        if (lines.length >= y + 1) {
+          for (let x = 0; x < GridDims.width; x++) {
+            if (x <= lines[y].length - 1) {
+              theLevelArrays[y][x] = lines[y][x];
+            }
+          }
+        }
+      }
+      input.value = '';
     })
 
     function update() { }
