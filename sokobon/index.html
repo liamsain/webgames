@@ -2,6 +2,10 @@
 
 <head>
   <style>
+    body {
+      font-family: Verdana, sans-serif;
+    }
+
     canvas {
       width: 800;
       height: 600;
@@ -12,11 +16,12 @@
     button {
       margin: 12px;
       padding: 12px;
+      font-family: Verdana, sans-serif;
     }
 
     h2 {
       text-align: center;
-      margin: 0;
+      margin: 8px;
     }
   </style>
 </head>
@@ -28,8 +33,8 @@
     <canvas id="game"></canvas>
   </div>
   <div style="display: flex;justify-content: center;">
-    <button onclick="reset();">Reset</button>
-    <button onclick="undo()">Undo</button>
+    <button onclick="reset();">Reset (r)</button>
+    <button onclick="undo()">Undo (u)</button>
   </div>
 
   <script>
@@ -328,7 +333,8 @@
             ctx.fillStyle = '#929930';
           } else if (tile == MapKeys.Empty) {
             ctx.rect(x * CellWidth, y * CellWidth, CellWidth, CellWidth);
-            ctx.fillStyle = '#fff';
+            // ctx.fillStyle = '#fff';
+            ctx.fillStyle = '#93b2f5';
           }
           ctx.fill();
         }
