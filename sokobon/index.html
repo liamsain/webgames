@@ -6,7 +6,7 @@
       width: 800;
       height: 600;
       /* border-radius: 4px; */
-      border: 1px solid rgb(204, 204, 204);
+      /*border: 1px solid rgb(204, 204, 204);*/
     }
   </style>
 </head>
@@ -17,7 +17,7 @@
   </div>
   <script>
 
-    const CellWidth = 40;
+    let CellWidth = 40;
     const GridDims = { height: 20, width: 20 };
     let lastTime = 0;
     let states = [];
@@ -41,6 +41,79 @@
       Empty: '*'
     }
     const Levels = [
+      {
+        name: 'Hair and glasses',
+        data: `********************
+*****-------********
+***---.-...---******
+***-..pc.....--*****
+***-.--.......--****
+***-.---.......---**
+***-.---.........-**
+***-..........--.-**
+***-.-----------.-**
+***-.-*********-.-**
+**--.-*******---.--*
+**--.-******--....-*
+*--..--****--....--*
+*-....-****-.....-**
+*-..-.------..+..-**
+*-...............-**
+*--...------....--**
+**-----****--..--***
+************----****
+********************
+`
+      },
+      {
+        name: 'Crooked staff', data: `
+********************
+*****----***********
+*-----..-*****---***
+*-pc....----**-.-***
+*-.---.....-*--.--**
+*-.-.-.....-*-...--*
+*-.-.-----.-*-.+..--
+*-.........-*-...--*-
+*-.----.--.----..-**
+*-.-..-.....-*-.--**
+*-.-..-.....-*-.--**
+*-....---..----..--*
+--......----......--
+-................---
+-...-.----....-..-**
+--..-.--*--......-**
+*-..-.--**--.....-**
+*-------***-------**
+********************
+********************
+
+      `},
+
+      {
+        name: 'Smoking man',
+        data: `********************
+********************
+********************
+**********---*******
+******---------*****
+*****--.....-*******
+*****--.--.---*-****
+*****--.....----****-
+******---...+-******-
+********--.----*****
+***-------.--.---***
+***--.....c.....-***
+****--....p....--***
+*****----.....--****
+********-------*****
+*************--*****
+********************
+********************
+********************
+********************
+`
+      },
       {
         name: 'chicken',
         data: `********************
@@ -175,10 +248,10 @@
           ctx.beginPath();
           if (tile == MapKeys.Wall) {
             ctx.rect(x * CellWidth, y * CellWidth, CellWidth, CellWidth);
-            ctx.fillStyle = '#c70e0e';
+            ctx.fillStyle = '#f06c57';
           } else if (tile == MapKeys.Floor) {
             ctx.rect(x * CellWidth, y * CellWidth, CellWidth, CellWidth);
-            ctx.fillStyle = '#c4c4c4';
+            ctx.fillStyle = '#f9edd8';
           } else if (tile == MapKeys.Player) {
             ctx.rect(x * CellWidth, y * CellWidth, CellWidth, CellWidth);
             ctx.fillStyle = '#1153ed';
@@ -187,7 +260,10 @@
             ctx.fillStyle = '#dce625';
           } else if (tile == MapKeys.Target) {
             ctx.rect(x * CellWidth, y * CellWidth, CellWidth, CellWidth);
-            ctx.fillStyle = '#25e632';
+            ctx.fillStyle = '#929930';
+          } else if (tile == MapKeys.Empty) {
+            ctx.rect(x * CellWidth, y * CellWidth, CellWidth, CellWidth);
+            ctx.fillStyle = '#fff';
           }
           ctx.fill();
         }
@@ -270,6 +346,21 @@
     document.addEventListener('keydown', (ev) => {
       handleKeydown(ev.key);
     })
+    window.addEventListener('resize', (ev) => {
+      if (window.innerWidth < 800) {
+        CellWidth = 24;
+        canvas.style.width = GridDims.width * dpr * CellWidth;
+        canvas.style.height = GridDims.height * dpr * CellWidth;
+        canvas.width = GridDims.width * dpr * CellWidth;
+        canvas.height = GridDims.height * dpr * CellWidth;
+      } else {
+        CellWidth = 40;
+        canvas.style.height = GridDims.height * dpr * CellWidth;
+        canvas.style.width = GridDims.width * dpr * CellWidth;
+        canvas.width = GridDims.width * dpr * CellWidth;
+        canvas.height = GridDims.height * dpr * CellWidth;
+      }
+    });
 
     function update() { }
     function draw() {

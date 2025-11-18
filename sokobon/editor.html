@@ -6,7 +6,7 @@
       width: 800;
       height: 600;
       /* border-radius: 4px; */
-      border: 1px solid rgb(204, 204, 204);
+      /* border: 1px solid rgb(204, 204, 204); */
     }
 
     p {
@@ -71,9 +71,11 @@
           ctx.beginPath();
           ctx.rect(x * CellWidth, y * CellWidth, CellWidth, CellWidth);
           if (tile == MapKeys.Wall) {
-            ctx.fillStyle = '#c70e0e';
+            // ctx.fillStyle = '#c70e0e';
+            ctx.fillStyle = '#f06c57';
           } else if (tile == MapKeys.Floor) {
-            ctx.fillStyle = '#c4c4c4';
+            ctx.fillStyle = '#f9edd8';
+            // ctx.fillStyle = '#c4c4c4';
           } else if (tile == MapKeys.Player) {
             ctx.fillStyle = '#1153ed';
           } else if (tile == MapKeys.Crate) {
@@ -82,8 +84,29 @@
             ctx.fillStyle = '#25e632';
           } else if (tile == MapKeys.Empty) {
             ctx.fillStyle = '#fff';
+            ctx.strokeStyle = '#d1d1d1';
+            ctx.stroke();
           }
           ctx.fill();
+        }
+      }
+    }
+    function handleLevelShift(arrowKey) {
+      if (arrowKey == 'ArrowDown') {
+        theLevelArrays.pop();
+        theLevelArrays.unshift(new Array(GridDims.width).fill(MapKeys.Empty));
+      } else if (arrowKey == 'ArrowUp') {
+        theLevelArrays.shift();
+        theLevelArrays.push(new Array(GridDims.width).fill(MapKeys.Empty));
+      } else if (arrowKey == 'ArrowRight') {
+        for (let y = 0; y < theLevelArrays.length; y++) {
+          theLevelArrays[y].pop();
+          theLevelArrays[y].unshift(MapKeys.Empty);
+        }
+      } else if (arrowKey == 'ArrowLeft') {
+        for (let y = 0; y < theLevelArrays.length; y++) {
+          theLevelArrays[y].shift();
+          theLevelArrays[y].push(MapKeys.Empty);
         }
       }
     }
@@ -104,6 +127,9 @@
         selectedBrush = MapKeys.Target;
       } else if (key == 'l') {
         logLevelStringToConsole();
+      }
+      else if (key.startsWith('Arrow')) {
+        handleLevelShift(key);
       }
       for (const k in MapKeys) {
         if (selectedBrush == MapKeys[k]) {
@@ -145,6 +171,23 @@
       if (mouseIsDown) {
         handleMouseDown(ev)
       }
+    })
+    document.addEventListener('wheel', (ev) => {
+      const keys = [];
+      for (const k in MapKeys) {
+        keys.push(k);
+      }
+      debugger;
+      const current = keys.findIndex(k => MapKeys[k] == selectedBrush);
+      let direction = ev.deltaY > 0 ? 1 : -1;
+      let key;
+      if (direction == 1) {
+        key = keys[(current + 1) % keys.length];
+      } else {
+        key = keys[(current - 1 + keys.length) % keys.length];
+      }
+      selectedBrush = MapKeys[key];
+      document.querySelector('#current').innerHTML = key;
     })
 
     function update() { }
