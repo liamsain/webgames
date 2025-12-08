@@ -194,23 +194,68 @@
       }
     }
 
+    function fill(ev) {
+      const visited = [];
+      const x = Math.floor(ev.offsetX / CellWidth);
+      const y = Math.floor(ev.offsetY / CellWidth);
+      const tileTypeToFillWith = selectedTile;
+      const tileTypeToTarget = theLevelArrays[y][x];
+      const q = [[y, x]];
+      while (q.length) {
+        const [cy, cx] = q.pop();
+        if (theLevelArrays[cy][cx] == tileTypeToTarget) {
+          theLevelArrays[cy][cx] = tileTypeToFillWith;
+        }
+        visited.push(`${cy} ${cx}`);
+        [
+          [cy - 1, cx],
+          [cy + 1, cx],
+          [cy, cx + 1],
+          [cy, cx - 1]
+        ].forEach(val => {
+          if (!visited.includes(`${val[0]} ${val[1]}`) && theLevelArrays[val[0]][val[1]] == tileTypeToTarget) {
+            q.push([val[0], val[1]]);
+            visited.push(`${val[0]} ${val[1]}`)
+          }
+        })
+
+      }
+
+    }
+
     document.addEventListener('keydown', (ev) => {
       handleKeydown(ev.key);
     })
     document.addEventListener('mousedown', (ev) => {
-      handleMouseDown(ev);
-      mouseIsDown = true;
+      if (ev.which == 1) {
+        handleMouseDown(ev);
+        mouseIsDown = true;
+      }
     })
 
     document.addEventListener('mouseup', (ev) => {
-      mouseIsDown = false;
+      if (ev.which == 1) {
+        mouseIsDown = false;
+      }
     });
     document.addEventListener('mousemove', (ev) => {
       if (mouseIsDown) {
         handleMouseDown(ev)
       }
     })
+
+    addEventListener('contextmenu', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      fill(ev);
+    })
+
     document.addEventListener('wheel', (ev) => {
+
+      if (ev.target.id != 'game') {
+        return;
+      }
+      ev.preventDefault();
       const keys = [];
       for (const k in MapKeys) {
         keys.push(k);
@@ -226,7 +271,7 @@
       selectedTile = MapKeys[key];
       updateSelectedTileView();
       document.querySelector('#current').innerHTML = key;
-    })
+    }, {passive: false})
 
     document.querySelector('#textareaSubmitBtn').addEventListener('click', () => {
       const input = document.querySelector('#textareaLevelInput');
