@@ -62,7 +62,9 @@
 
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
+    // const dpr = window.devicePixelRatio || 1;
+    const dpr = 1;
+    console.log(dpr)
     canvas.style.width = GridDims.width * dpr * CellWidth;
     canvas.style.height = GridDims.height * dpr * CellWidth;
     canvas.width = GridDims.width * dpr * CellWidth;
