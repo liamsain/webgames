@@ -195,27 +195,31 @@
     }
 
     function fill(ev) {
-      const visited = [];
+      const visited = {};
       const x = Math.floor(ev.offsetX / CellWidth);
       const y = Math.floor(ev.offsetY / CellWidth);
       const tileTypeToFillWith = selectedTile;
       const tileTypeToTarget = theLevelArrays[y][x];
       const q = [[y, x]];
       while (q.length) {
-        const [cy, cx] = q.pop();
-        if (theLevelArrays[cy][cx] == tileTypeToTarget) {
-          theLevelArrays[cy][cx] = tileTypeToFillWith;
+        const [cy, cx] = q.shift();
+        if (theLevelArrays[cy][cx] != tileTypeToTarget) {
+          continue
         }
-        visited.push(`${cy} ${cx}`);
+
+        theLevelArrays[cy][cx] = tileTypeToFillWith;
         [
           [cy - 1, cx],
           [cy + 1, cx],
           [cy, cx + 1],
           [cy, cx - 1]
         ].forEach(val => {
-          if (!visited.includes(`${val[0]} ${val[1]}`) && theLevelArrays[val[0]][val[1]] == tileTypeToTarget) {
-            q.push([val[0], val[1]]);
-            visited.push(`${val[0]} ${val[1]}`)
+          const inBounds = val[0] >= 0 && val[0] < GridDims.height && val[1] >= 0 && val[1] < GridDims.width;
+          if (inBounds) {
+            if (!visited[`${val[0]} ${val[1]}`] && theLevelArrays[val[0]][val[1]] == tileTypeToTarget) {
+              q.push([val[0], val[1]]);
+              visited[`${val[0]} ${val[1]}`] = true;
+            }
           }
         })
 
@@ -271,7 +275,7 @@
       selectedTile = MapKeys[key];
       updateSelectedTileView();
       document.querySelector('#current').innerHTML = key;
-    }, {passive: false})
+    }, { passive: false })
 
     document.querySelector('#textareaSubmitBtn').addEventListener('click', () => {
       const input = document.querySelector('#textareaLevelInput');
